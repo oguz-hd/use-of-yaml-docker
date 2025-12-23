@@ -1,96 +1,181 @@
-# YAML ve Docker Compose Yapılandırma Rehberi
 
-Bu belge, **YAML** dilinin sözdizimini, kurallarını ve özellikle **Docker** konteyner mimarisindeki (Docker Compose) kritik rolünü detaylıca açıklar.
+```markdown
+# YAML (YAML Ain't Markup Language) Rehberi
 
-**Hazırlayanlar:** Oğuz & Kerem  
-**Ders:** İnternet Programcılığı
+Bu rehber; YAML'ın ne olduğunu, nerede kullanıldığını, temel sözdizimini ve ileri seviye özelliklerini kapsayan bir başvuru kaynağıdır.
+
+## 📋 İçindekiler
+- [YAML Nedir?](#yaml-nedir)
+- [Neden ve Nerede Kullanılır?](#neden-ve-nerede-kullanılır)
+- [Temel Kurallar](#temel-kurallar)
+- [Veri Yapıları](#veri-yapıları)
+  - [Scalar (Tekil Değerler)](#scalar-tekil-değerler)
+  - [Diziler (Lists/Sequences)](#diziler-listssequences)
+  - [Sözlükler (Dictionaries/Maps)](#sözlükler-dictionariesmaps)
+- [İleri Seviye Özellikler](#ileri-seviye-özellikler)
+  - [Çok Satırlı Metinler](#çok-satırlı-metinler)
+  - [Anchor ve Alias (Tekrarları Önleme)](#anchor-ve-alias-tekrarları-önleme)
+- [YAML vs JSON](#yaml-vs-json)
 
 ---
 
-## 1. YAML Nedir?
-**YAML** (YAML Ain't Markup Language), insan tarafından okunabilirliği en yüksek olan **veri serileştirme** dilidir. 
+## 🧐 YAML Nedir?
 
-Genellikle şu amaçlarla kullanılır:
-* **Konfigürasyon Dosyaları:** Docker, Kubernetes, Ansible vb.
-* **Veri Transferi:** Uygulamalar arası veri taşıma.
+YAML (**Y**AML **A**in't **M**arkup **L**anguage), insanlar tarafından kolayca okunabilen ve yazılabilen bir **veri serileştirme** (data serialization) dilidir. XML veya JSON gibi dillerin aksine, daha az karmaşık bir yapıya sahiptir ve görsel olarak daha temizdir.
 
-### Neden JSON veya XML değil de YAML?
-* **Daha Temiz:** Parantez `{}`, noktalı virgül `;` veya etiket `< >` karmaşası yoktur.
-* **Hiyerarşik:** Girintiler (boşluklar) ile yapı kurulur, bu da okunmayı kolaylaştırır.
+Temel amacı, verileri uygulamalar arasında taşımak veya yapılandırma dosyalarını (config files) oluşturmaktır.
 
 ---
 
-## 2. Temel YAML Sözdizimi (Syntax)
+## 🚀 Neden ve Nerede Kullanılır?
 
-YAML yazarken uyulması gereken en önemli kural: **ASLA TAB TUŞU KULLANMA!** Her zaman boşluk (space) kullanılmalıdır.
+YAML, sadeliği nedeniyle özellikle modern yazılım geliştirme süreçlerinde standart haline gelmiştir.
 
-### Anahtar-Değer Çiftleri (Key-Value)
-YAML'ın temeli, iki nokta üst üste `:` ile ayrılmış anahtar ve değerlerdir.
+* **Yapılandırma Dosyaları (Configuration Files):** Uygulamaların ayarlarını tutmak için.
+* **Docker & Kubernetes:** Konteyner orkestrasyonu ve tanımlamaları için (`docker-compose.yaml`).
+* **CI/CD Süreçleri:** GitHub Actions, GitLab CI, Jenkins gibi araçlarda pipeline tanımları için.
+* **Log Dosyaları:** Okunabilir log çıktıları oluşturmak için.
 
-**YAML Kodu:**
+---
+
+## 📏 Temel Kurallar
+
+YAML yazarken dikkat edilmesi gereken en kritik kurallar şunlardır:
+
+1.  **Girintileme (Indentation):** Hiyerarşiyi belirtmek için kullanılır.
+    * ⚠️ **Asla TAB tuşu kullanmayın.** Sadece boşluk (space) kullanın.
+    * Genellikle her seviye için **2 boşluk** standardı benimsenir.
+2.  **Büyük/Küçük Harf Duyarlılığı:** `Ad` ile `ad` farklı anahtarlardır (Case sensitive).
+3.  **Anahtar-Değer İlişkisi:** Veriler `anahtar: değer` şeklinde saklanır. `:` işaretinden sonra mutlaka bir boşluk bırakılmalıdır.
+4.  **Yorum Satırları:** `#` işareti ile başlar. Derleyici bu satırları yok sayar.
+
 ```yaml
-ad: "Oğuz"
-ders: "İnternet Programcılığı"
-aktif_mi: true
-port: 8080
-Girinti ve Hiyerarşi (Indentation)Alt özellikleri belirtmek için genellikle 2 boşluk bırakılır.YAML Kodu:YAMLsunucu:
-  ip: 192.168.1.1
-  durum: aktif
-  ayarlar:
-    zaman_asimi: 30
-    dil: tr
-Listeler (Lists/Sequences)Bir listenin elemanlarını belirtmek için tire - işareti kullanılır.YAML Kodu:YAMLprogramlama_dilleri:
+# Bu bir yorum satırıdır
+anahtar: değer # Satır sonuna da yorum eklenebilir
+
+```
+
+---
+
+## 🧱 Veri Yapıları
+
+### Scalar (Tekil Değerler)
+
+Stringler (metin), sayılar (integer/float) ve boolean (doğru/yanlış) değerlerdir.
+
+```yaml
+isim: "Ahmet"       # Çift tırnak (isteğe bağlı)
+meslek: Mühendis    # Tırnaksız kullanım yaygındır
+yas: 25             # Integer
+boy: 1.78           # Float
+ogrenci_mi: true    # Boolean (true/false, yes/no, on/off)
+bos_deger: null     # Null değeri (~ sembolü de null anlamına gelir)
+
+```
+
+### Diziler (Lists/Sequences)
+
+Bir liste oluşturmak için her öğenin başına tire (`-`) ve bir boşluk konur.
+
+```yaml
+programlama_dilleri:
   - Python
   - JavaScript
   - Go
-Sözlükler ve Listelerin BirleşimiGenellikle Docker Compose dosyalarında bu yapı kullanılır.YAML Kodu:YAMLogrenciler:
-  - isim: Ahmet
-    not: 90
-  - isim: Ayşe
-    not: 85
-3. Docker Compose ve YAMLDocker'da docker-compose.yml dosyası, çoklu konteyner uygulamalarını tanımlamak ve çalıştırmak için kullanılır. İşte gerçek bir senaryo üzerinden inceleme:Örnek docker-compose.yml DosyasıAşağıdaki kod, bir Web Uygulaması ve bir Veritabanı (Redis) servisini aynı anda ayağa kaldırır.YAMLversion: '3.8'  # Docker Compose sürümü
+  - C++
 
-services:       # Servislerin (Konteynerlerin) listesi
-  
-  web_uygulamasi:
-    image: python:alpine           # Kullanılacak İmaj
-    ports:
-      - "5000:5000"                # Port Yönlendirme (Host:Container)
-    volumes:
-      - .:/code                    # Dosya Paylaşımı (Host klasörünü container'a bağlama)
-    environment:
-      FLASK_ENV: development       # Ortam Değişkenleri
-    depends_on:
-      - redis_db                   # Önce veritabanının başlamasını bekle
+# Alternatif (Inline) yazım şekli (JSON benzeri):
+alisveris_listesi: [Elma, Armut, Süt]
 
-  redis_db:
-    image: redis:alpine
-    restart: always                # Hata verirse yeniden başlat
-Docker Compose Anahtar KelimeleriAnahtar KelimeAçıklamaversionCompose dosyasının format sürümünü belirtir.servicesÇalıştırılacak konteynerlerin tanımlandığı ana bölümdür.imageKonteynerin hangi imajdan (Docker Hub) oluşturulacağını belirtir.buildHazır imaj yerine, bir Dockerfile dosyasından imaj oluşturulacaksa kullanılır.portsHost_Port:Container_Port şeklinde dışarıya kapı açar.volumesVerilerin kalıcı olmasını sağlar veya kod dosyasını içeri aktarır.environmentKonteyner içine değişken (şifre, API key vb.) göndermek için kullanılır.4. İleri Seviye ÖzelliklerÇok Satırlı Dizeler (Multi-line Strings)YAML'da uzun metinleri yönetmek için | ve > operatörleri kullanılır.| (Literal Style): Satır sonlarını korur.YAMLmesaj: |
-  Bu birinci satır.
-  Bu ikinci satır.
-> (Folded Style): Satır sonlarını boşluğa çevirir (tek satır yapar).YAMLozet: >
-  Bu çok uzun bir cümle ama
-  YAML bunu okurken tek bir satır
-  olarak birleştirecek.
-Çapalar ve Referanslar (Anchors & Aliases)Tekrar eden kodları yazmamak için & (tanımlama) ve * (kullanma) işaretleri kullanılır. Docker Compose'da "ortak ayarlar" için çok faydalıdır.YAML Kodu:YAML# Ortak ayarı tanımla
-ortak_ayar: &base
-  restart: always
-  logging: true
+```
 
-services:
-  web:
-    <<: *base       # Ortak ayarı buraya kopyala
-    image: nginx
-  
-  db:
-    <<: *base       # Ortak ayarı buraya da kopyala
-    image: postgres
-5. Sık Yapılan Hatalar ve En İyi UygulamalarYAML hataya çok açık bir dildir. Docker projenizin çalışması için aşağıdaki kurallara dikkat edin.✅ Bunu Yapın (Doğru)❌ Bunu Yapmayın (Yanlış)Boşluk (Space) kullanın.TAB tuşu kullanmayın. (YAML tab karakterini tanımaz).anahtar: değer (iki noktadan sonra boşluk).anahtar:değer (Bitişik yazmayın).Hiyerarşi için alt alta hizalayın.Hizalamayı kaydırırsanız kod çalışmaz.Metinleri tırnak içine almak zorunlu değildir.Ancak içinde özel karakter (:, {, [) varsa tırnak "..." kullanın.JSON vs YAML KarşılaştırmasıJSON:JSON{
-  "servis": "web",
-  "port": [80, 443]
-}
-YAML:YAMLservis: web
-port:
-  - 80
-  - 443
+### Sözlükler (Dictionaries/Maps)
+
+İç içe geçmiş anahtar-değer yapılarıdır. Nesne (Object) tanımlamak için kullanılır.
+
+```yaml
+kullanici:
+  id: 101
+  ad: Zeynep
+  adres:
+    sehir: İzmir
+    posta_kodu: 35000
+    ulke: Türkiye
+
+```
+
+---
+
+## 🛠 İleri Seviye Özellikler
+
+### Çok Satırlı Metinler
+
+Uzun metinleri yönetmek için iki farklı operatör kullanılır: `|` ve `>`.
+
+1. **Literal Style (`|`):** Satır sonlarını (yeni satır karakterini) olduğu gibi korur.
+
+```yaml
+siir: |
+  Gözlerin,
+  Gözlerin zindandakilere,
+  Umut verir.
+# Çıktıda her satır alt alta görünür.
+
+```
+
+2. **Folded Style (`>`):** Satır sonlarını birleştirir, metni tek bir satıra dönüştürür. Sadece okunabilirlik için editörde alt alta yazarsınız.
+
+```yaml
+aciklama: >
+  Bu çok uzun bir cümledir ve editörde
+  yer kaplamaması için alt alta yazılmıştır
+  fakat işlendiğinde tek satır olacaktır.
+# Çıktı: "Bu çok uzun bir cümledir ve editörde..."
+
+```
+
+### Anchor ve Alias (Tekrarları Önleme)
+
+YAML, verileri tekrar yazmayı önlemek için `&` (anchor/çapa) ve `*` (alias/referans) kullanımını destekler. (DRY - Don't Repeat Yourself).
+
+```yaml
+# Tanımlama (& ile işaretle)
+varsayilan_ayarlar: &base
+  adapter: postgres
+  host: localhost
+  port: 5432
+
+# Kullanma (* ile çağır)
+development:
+  database: dev_db
+  <<: *base  # base içindeki her şeyi buraya kopyalar
+
+test:
+  database: test_db
+  <<: *base
+
+# Sonuçta hem development hem test ortamı, adapter/host/port bilgilerine sahip olur.
+
+```
+
+---
+
+## 🆚 YAML vs JSON
+
+JSON ve YAML benzer işleri yapsa da bazı temel farklar vardır:
+
+| Özellik | YAML | JSON |
+| --- | --- | --- |
+| **Okunabilirlik** | Çok Yüksek (İnsan odaklı) | Yüksek (Makine odaklı) |
+| **Yorum Satırı** | Destekler (`#`) | Desteklemez |
+| **Sözdizimi** | Girinti tabanlı | Parantez `{}` ve tırnak `""` tabanlı |
+| **Dosya Boyutu** | Genellikle daha küçük | Biraz daha büyük (karakter fazlalığı) |
+| **Hız** | Parse etmesi nispeten yavaştır | Parse etmesi çok hızlıdır |
+
+---
+
+*Bu rehber, GitHub reponuzda YAML kullanımını standartlaştırmak ve temel bilgileri sağlamak amacıyla oluşturulmuştur.*
+
+```
+
+```
